@@ -2,7 +2,7 @@ from pathlib import Path
 
 from attackgap.attack_data import load_attack_stix
 from attackgap.inventory import load_inventory
-from attackgap.models import Coverage
+from attackgap.models import Coverage, SigmaRule
 from attackgap.scorer import score
 from attackgap.sigma_reader import load_rules
 
@@ -46,3 +46,11 @@ def test_with_attack_data_finds_visible_undetected_and_no_coverage():
     assert results["T1499"].coverage == Coverage.NO_COVERAGE
     assert results["T1059.001"].coverage == Coverage.DETECTED_VISIBLE
     assert results["T1059.001"].name == "Command and Scripting Interpreter: PowerShell"
+
+
+def test_deprecated_and_unsupported_rules_do_not_count_as_coverage():
+    rules = [
+        SigmaRule("deprecated.yml", status="deprecated", technique_ids=["T1059.001"]),
+        SigmaRule("unsupported.yml", status="unsupported", technique_ids=["T1078"]),
+    ]
+    assert score(rules, [], [], None) == {}

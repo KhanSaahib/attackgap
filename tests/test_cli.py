@@ -69,3 +69,26 @@ def test_cli_version(capsys):
     else:
         raise AssertionError("expected SystemExit from argparse version action")
     assert "attackgap 0.1.0" in capsys.readouterr().out
+
+
+def test_cli_empty_rules_directory_fails(tmp_path, capsys):
+    inventory = tmp_path / "inventory.json"
+    inventory.write_text('{"sources": []}', encoding="utf-8")
+    exit_code = main(["--rules", str(tmp_path), "--inventory", str(inventory)])
+    assert exit_code == 2
+    assert "no Sigma" in capsys.readouterr().err
+
+
+def test_cli_json_has_schema_and_summary(capsys):
+    exit_code = main(
+        [
+            "--rules", str(FIXTURES / "rules"),
+            "--inventory", str(FIXTURES / "inventory.json"),
+            "--format", "json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["schema_version"] == 1
+    assert "detected_visible" in payload["summary"]
+    assert "T1059.001" in payload["techniques"]

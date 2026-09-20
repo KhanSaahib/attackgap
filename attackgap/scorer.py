@@ -34,6 +34,8 @@ def score(
         return results[technique_id]
 
     for rule in rules:
+        if rule.status.strip().casefold() in {"deprecated", "unsupported"}:
+            continue
         label = rule.title or rule.rule_id or rule.path
         for technique_id in rule.technique_ids:
             result = get_or_create(technique_id)

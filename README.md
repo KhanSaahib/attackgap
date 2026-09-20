@@ -1,6 +1,6 @@
 # attackgap
 
-[![CI](https://github.com/KhanSaahib/attackgap/actions/workflows/ci.yml/badge.svg)](https://github.com/KhanSaahib/attackgap/actions/workflows/ci.yml)
+[![CI](https://github.com/KhanSaahib/attackgap/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/KhanSaahib/attackgap/actions/workflows/ci.yml?query=branch%3Amain)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -66,7 +66,8 @@ attackgap \
 - `--rules` -- a directory of Sigma `.yml`/`.yaml` rule files (searched
   recursively). Only `title`, `id`, `status`, `logsource` and `tags` are
   read; the `detection` block is ignored, since attackgap scores coverage,
-  it doesn't evaluate rules against logs.
+  it doesn't evaluate rules against logs. Rules marked `deprecated` or
+  `unsupported` are excluded so retired content cannot inflate coverage.
 - `--inventory` -- a JSON file describing what you actually collect (see
   below). Required.
 - `--attack-data` -- optional, a local MITRE ATT&CK Enterprise STIX bundle

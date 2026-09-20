@@ -3,15 +3,19 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 from . import __version__
 from .attack_data import load_attack_stix
 from .inventory import load_inventory
+from .models import Coverage
 from .navigator import build_layer
 from .report import render_markdown
 from .scorer import score
 from .sigma_reader import load_rules
+
+SCHEMA_VERSION = 1
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -59,6 +63,9 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, UnicodeError, ValueError) as exc:
         print(f"error: could not load input: {exc}", file=sys.stderr)
         return 2
+    if not rules:
+        print(f"error: no Sigma .yml or .yaml files found under {rules_dir}", file=sys.stderr)
+        return 2
 
     results = score(
         rules,
@@ -86,19 +93,28 @@ def main(argv: list[str] | None = None) -> int:
     if args.format == "markdown":
         report_text = render_markdown(results)
     else:
+        summary = {
+            coverage.value: sum(1 for result in results.values() if result.coverage == coverage)
+            for coverage in Coverage
+        }
         report_text = json.dumps(
             {
-                technique_id: {
-                    "coverage": result.coverage.value,
-                    "name": result.name,
-                    "reason": result.reason,
-                    "tactics": result.tactics,
-                    "rules": result.rules,
-                    "visible_rules": result.visible_rules,
-                    "blind_rules": result.blind_rules,
-                    "data_sources": result.data_sources,
-                }
-                for technique_id, result in results.items()
+                "schema_version": SCHEMA_VERSION,
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "summary": summary,
+                "techniques": {
+                    technique_id: {
+                        "coverage": result.coverage.value,
+                        "name": result.name,
+                        "reason": result.reason,
+                        "tactics": result.tactics,
+                        "rules": result.rules,
+                        "visible_rules": result.visible_rules,
+                        "blind_rules": result.blind_rules,
+                        "data_sources": result.data_sources,
+                    }
+                    for technique_id, result in results.items()
+                },
             },
             indent=2,
         )
