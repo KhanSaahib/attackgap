@@ -92,3 +92,27 @@ def test_cli_json_has_schema_and_summary(capsys):
     assert payload["schema_version"] == 1
     assert "detected_visible" in payload["summary"]
     assert "T1059.001" in payload["techniques"]
+
+
+def test_cli_fail_on_blind_is_a_ci_gate(capsys):
+    exit_code = main(
+        [
+            "--rules", str(FIXTURES / "rules"),
+            "--inventory", str(FIXTURES / "inventory.json"),
+            "--fail-on", "blind",
+        ]
+    )
+    capsys.readouterr()
+    assert exit_code == 1
+
+
+def test_cli_fail_on_never_remains_zero(capsys):
+    exit_code = main(
+        [
+            "--rules", str(FIXTURES / "rules"),
+            "--inventory", str(FIXTURES / "inventory.json"),
+            "--fail-on", "never",
+        ]
+    )
+    capsys.readouterr()
+    assert exit_code == 0

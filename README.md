@@ -84,6 +84,11 @@ attackgap \
 - `--report-output` -- write a markdown gap report; without it, the report
   prints to stdout (`--format json` for a machine-readable version instead).
 
+For CI, `--fail-on blind` exits `1` when a rule exists but its telemetry is
+missing. `--fail-on actionable` also gates on visible-but-undetected
+techniques, while `--fail-on any-gap` includes techniques with no coverage at
+all. The default, `--fail-on never`, keeps reporting informational.
+
 ### Inventory format
 
 A format this tool defines itself -- plain JSON, no external schema:

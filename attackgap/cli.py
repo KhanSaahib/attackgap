@@ -40,6 +40,15 @@ def build_parser() -> argparse.ArgumentParser:
         default="markdown",
         help="Format for stdout summary when --report-output is not given",
     )
+    parser.add_argument(
+        "--fail-on",
+        choices=["never", "blind", "actionable", "any-gap"],
+        default="never",
+        help=(
+            "CI gate: blind=detected-but-blind; actionable=blind or visible-undetected; "
+            "any-gap=anything except detected-visible (default: never)"
+        ),
+    )
     return parser
 
 
@@ -128,6 +137,18 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(report_text)
 
+    failing_coverages = {
+        "never": set(),
+        "blind": {Coverage.DETECTED_BLIND},
+        "actionable": {Coverage.DETECTED_BLIND, Coverage.VISIBLE_UNDETECTED},
+        "any-gap": {
+            Coverage.DETECTED_BLIND,
+            Coverage.VISIBLE_UNDETECTED,
+            Coverage.NO_COVERAGE,
+        },
+    }[args.fail_on]
+    if any(result.coverage in failing_coverages for result in results.values()):
+        return 1
     return 0
 
 
