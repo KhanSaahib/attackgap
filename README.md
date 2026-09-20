@@ -199,3 +199,11 @@ repository.
 ## License
 
 MIT, see [LICENSE](LICENSE).
+
+## Community and project health
+
+- [Contributing guide](CONTRIBUTING.md) — development setup and review expectations
+- [Code of Conduct](CODE_OF_CONDUCT.md) — participation standards and enforcement
+- [Security policy](SECURITY.md) — supported versions and private reporting
+- [Support guide](SUPPORT.md) — how to ask for help safely
+- [Changelog](CHANGELOG.md) — notable changes by release

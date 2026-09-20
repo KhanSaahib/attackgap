@@ -29,12 +29,20 @@ classifiers = [
 Homepage = "https://github.com/KhanSaahib/attackgap"
 Issues = "https://github.com/KhanSaahib/attackgap/issues"
 Source = "https://github.com/KhanSaahib/attackgap"
+Changelog = "https://github.com/KhanSaahib/attackgap/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/KhanSaahib/attackgap#readme"
+Security = "https://github.com/KhanSaahib/attackgap/security/policy"
 
 [project.scripts]
 attackgap = "attackgap.cli:main"
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+dev = ["build>=1.2", "pytest>=8"]
 
 [tool.setuptools.packages.find]
 include = ["attackgap*"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra --strict-config --strict-markers"
+testpaths = ["tests"]
