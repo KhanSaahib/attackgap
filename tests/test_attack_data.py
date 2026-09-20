@@ -16,3 +16,12 @@ def test_load_attack_stix_extracts_expected_fields():
 def test_load_attack_stix_skips_deprecated():
     meta = load_attack_stix(FIXTURE)
     assert "T9999" not in meta
+
+
+def test_load_attack_stix_skips_malformed_objects(tmp_path):
+    path = tmp_path / "attack.json"
+    path.write_text(
+        '{"objects": [null, "bad", {"type": "attack-pattern", "external_references": [null]}]}',
+        encoding="utf-8",
+    )
+    assert load_attack_stix(path) == {}

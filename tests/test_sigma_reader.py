@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from attackgap.sigma_reader import load_rules, normalize_technique, parse_sigma_file
+from attackgap.sigma_reader import load_rules, normalize_technique, parse_sigma_file, parse_sigma_text
 
 FIXTURES = Path(__file__).parent / "fixtures" / "rules"
 
@@ -35,3 +35,12 @@ def test_load_rules_reads_whole_directory():
     assert len(rules) == 3
     all_ids = {tid for rule in rules for tid in rule.technique_ids}
     assert all_ids == {"T1059.001", "T1078"}
+
+
+def test_inline_comments_are_removed_without_touching_quoted_hashes():
+    rule = parse_sigma_text(
+        'title: "PowerShell #1" # comment\n'
+        "tags: [attack.t1059.001] # comment\n"
+    )
+    assert rule.title == "PowerShell #1"
+    assert rule.technique_ids == ["T1059.001"]

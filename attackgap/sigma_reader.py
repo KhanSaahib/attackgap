@@ -33,8 +33,20 @@ def normalize_technique(tag: str) -> str | None:
 
 
 def _strip_comment(line: str) -> str:
-    if line.lstrip().startswith("#"):
-        return ""
+    quote: str | None = None
+    escaped = False
+    for index, char in enumerate(line):
+        if escaped:
+            escaped = False
+            continue
+        if char == "\\" and quote == '"':
+            escaped = True
+            continue
+        if char in ("'", '"'):
+            quote = None if quote == char else char if quote is None else quote
+            continue
+        if char == "#" and quote is None and (index == 0 or line[index - 1].isspace()):
+            return line[:index].rstrip()
     return line
 
 

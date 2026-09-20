@@ -5,6 +5,7 @@ import json
 import sys
 from pathlib import Path
 
+from . import __version__
 from .attack_data import load_attack_stix
 from .inventory import load_inventory
 from .navigator import build_layer
@@ -18,15 +19,17 @@ def build_parser() -> argparse.ArgumentParser:
         prog="attackgap",
         description="Offline MITRE ATT&CK detection-coverage gap mapper.",
     )
-    parser.add_argument("--rules", required=True, help="Directory of Sigma rule .yml/.yaml files")
-    parser.add_argument("--inventory", required=True, help="Path to a JSON telemetry inventory file")
+    parser.add_argument("--rules", required=True, type=Path, help="Directory of Sigma rule .yml/.yaml files")
+    parser.add_argument("--inventory", required=True, type=Path, help="Path to a JSON telemetry inventory file")
     parser.add_argument(
         "--attack-data",
+        type=Path,
         help="Optional local MITRE ATT&CK Enterprise STIX bundle JSON "
         "(adds technique names/tactics and finds visible-but-undetected gaps)",
     )
-    parser.add_argument("--layer-output", help="Write an ATT&CK Navigator layer JSON to this path")
-    parser.add_argument("--report-output", help="Write a markdown gap report to this path")
+    parser.add_argument("--layer-output", type=Path, help="Write an ATT&CK Navigator layer JSON to this path")
+    parser.add_argument("--report-output", type=Path, help="Write a markdown gap report to this path")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument(
         "--format",
         choices=["markdown", "json"],
@@ -39,19 +42,23 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
-    rules_dir = Path(args.rules)
+    rules_dir = args.rules
     if not rules_dir.is_dir():
         print(f"error: rules directory not found: {rules_dir}", file=sys.stderr)
         return 2
 
-    inventory_path = Path(args.inventory)
+    inventory_path = args.inventory
     if not inventory_path.is_file():
         print(f"error: inventory file not found: {inventory_path}", file=sys.stderr)
         return 2
 
-    rules = load_rules(rules_dir)
-    inventory = load_inventory(inventory_path)
-    attack_meta = load_attack_stix(Path(args.attack_data)) if args.attack_data else None
+    try:
+        rules = load_rules(rules_dir)
+        inventory = load_inventory(inventory_path)
+        attack_meta = load_attack_stix(args.attack_data) if args.attack_data else None
+    except (OSError, UnicodeError, ValueError) as exc:
+        print(f"error: could not load input: {exc}", file=sys.stderr)
+        return 2
 
     results = score(
         rules,
@@ -70,7 +77,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.layer_output:
         layer = build_layer(results)
-        Path(args.layer_output).write_text(json.dumps(layer, indent=2), encoding="utf-8")
+        try:
+            args.layer_output.write_text(json.dumps(layer, indent=2), encoding="utf-8")
+        except OSError as exc:
+            print(f"error: could not write layer output: {exc}", file=sys.stderr)
+            return 2
 
     if args.format == "markdown":
         report_text = render_markdown(results)
@@ -81,6 +92,11 @@ def main(argv: list[str] | None = None) -> int:
                     "coverage": result.coverage.value,
                     "name": result.name,
                     "reason": result.reason,
+                    "tactics": result.tactics,
+                    "rules": result.rules,
+                    "visible_rules": result.visible_rules,
+                    "blind_rules": result.blind_rules,
+                    "data_sources": result.data_sources,
                 }
                 for technique_id, result in results.items()
             },
@@ -88,7 +104,11 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     if args.report_output:
-        Path(args.report_output).write_text(report_text, encoding="utf-8")
+        try:
+            args.report_output.write_text(report_text, encoding="utf-8")
+        except OSError as exc:
+            print(f"error: could not write report output: {exc}", file=sys.stderr)
+            return 2
     else:
         print(report_text)
 

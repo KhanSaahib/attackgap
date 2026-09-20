@@ -49,3 +49,23 @@ def test_cli_missing_rules_dir_errors(tmp_path, capsys):
         ]
     )
     assert exit_code == 2
+
+
+def test_cli_reports_invalid_inventory(tmp_path, capsys):
+    inventory = tmp_path / "inventory.json"
+    inventory.write_text("[]", encoding="utf-8")
+    exit_code = main(
+        ["--rules", str(FIXTURES / "rules"), "--inventory", str(inventory)]
+    )
+    assert exit_code == 2
+    assert "inventory root" in capsys.readouterr().err
+
+
+def test_cli_version(capsys):
+    try:
+        main(["--version"])
+    except SystemExit as exc:
+        assert exc.code == 0
+    else:
+        raise AssertionError("expected SystemExit from argparse version action")
+    assert "attackgap 0.1.0" in capsys.readouterr().out

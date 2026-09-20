@@ -1,5 +1,9 @@
 # attackgap
 
+[![CI](https://github.com/KhanSaahib/attackgap/actions/workflows/ci.yml/badge.svg)](https://github.com/KhanSaahib/attackgap/actions/workflows/ci.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 An offline tool that answers a question detection engineers ask constantly
 and rarely have hard data for: **"if this technique were used against us
 right now, would we actually see it?"**
@@ -37,14 +41,15 @@ Dependency-free (Python 3.10+ standard library only).
 ```bash
 git clone https://github.com/KhanSaahib/attackgap.git
 cd attackgap
-python3 -m pytest tests/ -q   # optional: run the test suite
+python -m pip install -e ".[dev]"
+python -m pytest -q   # optional: run the test suite
 ```
 
 Or as a package:
 
 ```bash
-python -m pip install -e .[dev]
 attackgap --help
+# Equivalent: python -m attackgap --help
 ```
 
 ## Usage

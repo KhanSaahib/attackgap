@@ -14,33 +14,54 @@ from pathlib import Path
 
 def load_attack_stix(path: Path) -> dict:
     raw = json.loads(Path(path).read_text(encoding="utf-8"))
-    objects = raw.get("objects", []) if isinstance(raw, dict) else raw
+    if isinstance(raw, dict):
+        objects = raw.get("objects", [])
+    elif isinstance(raw, list):
+        objects = raw
+    else:
+        raise ValueError("ATT&CK data must be a STIX bundle object or a list of objects")
+    if not isinstance(objects, list):
+        raise ValueError("ATT&CK STIX 'objects' must be a list")
 
     result: dict[str, dict] = {}
     for obj in objects:
+        if not isinstance(obj, dict):
+            continue
         if obj.get("type") != "attack-pattern":
             continue
         if obj.get("x_mitre_deprecated") or obj.get("revoked"):
             continue
 
+        references = obj.get("external_references", [])
+        if not isinstance(references, list):
+            references = []
         technique_id = None
-        for ref in obj.get("external_references", []):
+        for ref in references:
+            if not isinstance(ref, dict):
+                continue
             if ref.get("source_name") == "mitre-attack":
                 technique_id = ref.get("external_id")
                 break
-        if not technique_id:
+        if not isinstance(technique_id, str) or not technique_id:
             continue
 
+        phases = obj.get("kill_chain_phases", [])
+        if not isinstance(phases, list):
+            phases = []
         tactics = [
             phase.get("phase_name")
-            for phase in obj.get("kill_chain_phases", [])
-            if phase.get("kill_chain_name") == "mitre-attack"
+            for phase in phases
+            if isinstance(phase, dict) and phase.get("kill_chain_name") == "mitre-attack"
         ]
+
+        data_sources = obj.get("x_mitre_data_sources", [])
+        if not isinstance(data_sources, list):
+            data_sources = []
 
         result[technique_id] = {
             "name": obj.get("name", ""),
             "tactics": tactics,
-            "data_sources": obj.get("x_mitre_data_sources", []),
+            "data_sources": data_sources,
         }
 
     return result
