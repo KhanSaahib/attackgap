@@ -1,8 +1,27 @@
 # attackgap
 
-[![CI](https://github.com/KhanSaahib/attackgap/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/KhanSaahib/attackgap/actions/workflows/ci.yml?query=branch%3Amain)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+<p align="center">
+  <img src="docs/assets/attackgap-social.png" alt="A security coverage map revealing a gap under a scanning beam" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://github.com/KhanSaahib/attackgap/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/KhanSaahib/attackgap/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+  <a href="https://www.python.org/downloads/"><img alt="Python 3.10+" src="https://img.shields.io/badge/python-3.10%2B-2563eb.svg"></a>
+  <img alt="Offline first" src="https://img.shields.io/badge/network-offline--first-0891b2.svg">
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-16a34a.svg"></a>
+</p>
+
+<p align="center"><strong>Measure whether your detections can actually see the techniques they claim to cover.</strong></p>
+
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#usage">Usage</a> ·
+  <a href="CONTRIBUTING.md">Contributing</a>
+</p>
+
+> [!TIP]
+> **Start here:** Run the fixture-backed [quick start](#quick-start). If it helps, [star this repo](https://github.com/KhanSaahib/attackgap) and [follow @KhanSaahib](https://github.com/KhanSaahib) for more practical blue-team tools.
 
 An offline tool that answers a question detection engineers ask constantly
 and rarely have hard data for: **"if this technique were used against us
@@ -19,6 +38,38 @@ layer plus a markdown report showing four states per technique:
 | **Detected but blind** | a rule exists, but the log source it needs isn't in your inventory -- false confidence, the rule will never fire |
 | **Visible but undetected** | you collect telemetry ATT&CK associates with this technique, but no rule covers it -- a gap to write a rule for |
 | **No coverage** | neither telemetry nor a rule |
+
+## Quick start
+
+Run the included Sigma rules and telemetry inventory through the full
+analysis path:
+
+```bash
+git clone https://github.com/KhanSaahib/attackgap.git
+cd attackgap
+python -m pip install -e .
+attackgap \
+  --rules tests/fixtures/rules \
+  --inventory tests/fixtures/inventory.json \
+  --attack-data tests/fixtures/attack_sample.json \
+  --layer-output coverage-layer.json \
+  --report-output coverage-report.md
+```
+
+Open `coverage-report.md` for the findings or import `coverage-layer.json`
+into ATT&CK Navigator.
+
+## How it works
+
+```mermaid
+flowchart LR
+    A[Sigma rules] --> D[Coverage scorer]
+    B[Telemetry inventory] --> D
+    C[ATT&CK bundle] --> D
+    D --> E[Navigator layer]
+    D --> F[Gap report]
+    D --> G[CI gate]
+```
 
 ## Why this exists
 
