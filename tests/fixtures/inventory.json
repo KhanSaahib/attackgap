@@ -1,0 +1,9 @@
+{
+  "sources": [
+    {"product": "windows", "service": "sysmon", "categories": ["process_creation", "network_connection"]}
+  ],
+  "data_sources": [
+    "Command: Command Execution",
+    "Scheduled Job: Scheduled Job Creation"
+  ]
+}

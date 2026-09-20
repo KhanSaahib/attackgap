@@ -1,0 +1,13 @@
+title: Encoded PowerShell Command Line (no matching telemetry source)
+id: 33333333-3333-3333-3333-333333333333
+status: stable
+logsource:
+    category: process_creation
+    product: linux
+detection:
+    selection:
+        CommandLine|contains: '-enc'
+    condition: selection
+tags:
+    - attack.t1059.001
+level: high

@@ -1,0 +1,13 @@
+# Comment line should be ignored by the reader
+title: Suspicious DNS Query Volume
+id: 22222222-2222-2222-2222-222222222222
+status: experimental
+logsource:
+    category: dns
+    product: zeek
+detection:
+    selection:
+        query|contains: 'suspicious'
+    condition: selection
+tags: [attack.t1078, attack.defense_evasion]
+level: low
